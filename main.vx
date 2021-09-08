@@ -1,0 +1,57 @@
+import sys;
+
+void main() {
+	SockAddrIn sa;
+	i32 sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (sockfd == -1) {
+		perror("cannot create socket");
+		exit(EXIT_FAILURE);
+	}
+
+	sa.sin_family = AF_INET;
+	sa.sin_port = htons(1100);
+	sa.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	i32 err = bind(sockfd, &sa, SockAddrIn.sizeof);
+	if (err == -1) {
+		perror("bind failed");
+		close(sockfd);
+		exit(EXIT_FAILURE);
+	}
+
+	err = listen(sockfd, 10);
+	if (err == -1) {
+		perror("listen failed");
+		close(sockfd);
+		exit(EXIT_FAILURE);
+	}
+
+	for (;;) {
+		i32 connfd = accept(sockfd, null, null);
+
+		if (connfd == -1) {
+			perror("accept failed");
+			close(sockfd);
+			exit(EXIT_FAILURE);
+		}
+
+		process();
+
+		err = shutdown(connfd, SHUT_RDWR);
+		if (err == -1) {
+			perror("shutdown failed");
+			close(connfd);
+			close(sockfd);
+			exit(EXIT_FAILURE);
+		}
+		close(connfd);
+	}
+
+	close(sockfd);
+	exit(EXIT_SUCCESS);
+}
+
+void process() {
+	println("connection received");
+}
+
